@@ -67,3 +67,5 @@ Przycisk **Start przy Zdrojowej 87** przenosi samochód na ulicę przy tym adres
 Samochód zastąpiono kolejnym, nowym modelem w stylu 126p 600 z 1975 r. według drugiego arkusza rzutów: pionowe tylne lampy i dwie sekcje chłodzenia, zwężający się dach, poprawione szyby i profil nadwozia. Nie jest to gotowy model licencjonowany z serwisu ani skan.
 
 Na poboczu i trawie nie ma już dodatkowego spowalniania. Przy małej prędkości promień skrętu wynosi około 4,4 m; przy większej prędkości skręt łagodnieje. Nachylenie terenu i kolizje nadal wpływają na jazdę.
+
+Skręcanie narasta łagodnie, a krótkie naciśnięcia strzałek służą do drobnych korekt. Przy większej prędkości kąt skrętu jest mocniej ograniczony. Zachodni chodnik i główna jezdnia tworzą ciągłe pasy. Gęstsza siatka podłoża przy drodze zapobiega przebijaniu trawy przez nawierzchnię; źródłowa rozdzielczość danych NMT pozostaje bez zmian. Przedłużenie zachodniego chodnika na całą trasę jest uzupełnieniem gry, nie nowym ustaleniem kartograficznym.

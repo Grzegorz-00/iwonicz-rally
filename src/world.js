@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {ribbonGeometry,groundGeometry} from './road-geometry.js';
 import {heightAt,grid} from './terrain.js';
 import {surface} from './surfaces.js';
 import data from './data/zdrojowa.json';
@@ -17,21 +18,8 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   const pathMat = mat(0xb1a68f), meadow = mat(0xa5b18a), forest = mat(0x8b9b77);
   const rails = mat(0x9d9d80), windows = M.glass;
   const features = [], drivable = [];
-  const terrainGeometry=new THREE.PlaneGeometry((grid.nx-1)*grid.step,(grid.nz-1)*grid.step,grid.nx-1,grid.nz-1);terrainGeometry.rotateX(-Math.PI/2);terrainGeometry.translate(grid.x0+(grid.nx-1)*grid.step/2,-.15,grid.z0+(grid.nz-1)*grid.step/2);const terrainMesh=new THREE.Mesh(terrainGeometry,M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
-  function strip(points, width, material, y=.025, offset=0) {
-    if(points.length<2)return;
-    const dense=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/3));for(let k=0;k<n;k++)dense.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]);}dense.push(points.at(-1));points=dense;
-    const vertices=[],indices=[];
-    for(let i=0;i<points.length;i++) {
-      const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)];
-      const len=Math.hypot(b[0]-a[0],b[1]-a[1])||1;
-      const nx=-(b[1]-a[1])/len,nz=(b[0]-a[0])/len;
-      for(const edge of [-1,1]){const d=offset+edge*width/2;vertices.push(points[i][0]+nx*d,y,points[i][1]+nz*d);}
-      if(i<points.length-1){const k=i*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
-    }
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();
-    const mesh=new THREE.Mesh(g,material);mesh.userData.conformTerrain=true;mesh.receiveShadow=true;scene.add(mesh);
-  }
+  const terrainMesh=new THREE.Mesh(groundGeometry(grid,data.route),M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
+  function strip(points,width,material,y=.025,offset=0){if(points.length<2)return;const mesh=new THREE.Mesh(ribbonGeometry(points,width,y,offset,[M.road,M.walk,M.curb,pathMat].includes(material)?.5:0),material);mesh.userData.conformTerrain=true;mesh.receiveShadow=true;scene.add(mesh);}
   function polygon(points, material, y) {
     if(points.length<4)return;
     const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z)));
@@ -51,11 +39,14 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
     if(!pedestrian)drivable.push({points:f.points,width});
   }
   const mainWidth=6.2; // Estimated from imagery, not an OSM measurement.
+  strip(data.route,mainWidth,M.road,.06);
+  // A continuous western walk is a deliberate gameplay reconstruction, not a new survey.
+  strip(data.route,1.7,M.walk,.12,-4.0);strip(data.route,.16,M.curb,.16,-3.15);
   for(const f of data.routeWays) {
-    strip(f.points,mainWidth,M.road,.06);drivable.push({points:f.points,width:mainWidth});
+    drivable.push({points:f.points,width:mainWidth});
     const side=f.tags.sidewalk;
     const sides=side==='both'?[-1,1]:side==='right'?[f.reversed?-1:1]:side==='left'?[f.reversed?1:-1]:[];
-    for(const side of sides){strip(f.points,1.35,M.walk,.11,side*(mainWidth/2+.8));strip(f.points,.16,M.curb,.14,side*(mainWidth/2+.1));}
+    for(const side of sides.filter(side=>side===1)){strip(f.points,1.35,M.walk,.11,side*(mainWidth/2+.8));strip(f.points,.16,M.curb,.14,side*(mainWidth/2+.1));}
     if(f.tags.bridge==='yes') {
       for(const side of [-1,1]) {
         strip(f.points,.22,M.curb,.2,side*4.1);
@@ -65,12 +56,9 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
       }
     }
   }
-  // Western sidewalk visible in Mapillary image 1265305397614531, local vicinity only.
-  const observedSidewalk=[];for(let s=178;s<=225;s+=2) {const p=pointAt(data.route,s);observedSidewalk.push([p.x,p.z]);}
-  strip(observedSidewalk,1.25,M.walk,.115,-3.85);strip(observedSidewalk,.15,M.curb,.15,-3.18);
   // Street furniture and western paved walk confirmed in the three new Mapillary views.
   const zone=[];for(let s=650;s<=830;s+=3){const p=pointAt(data.route,s);zone.push([p.x,p.z]);}
-  strip(zone,1.7,M.walk,.12,-4.05);strip(zone,.18,mat(0x986b5c),.13,-3.55);strip(zone,.14,M.curb,.16,-3.15);
+  strip(zone,.18,mat(0x986b5c),.13,-3.55);
   strip(zone,.15,mat(0xc2bda6),.07,-2.98);
   const guard=[];for(let s=680;s<=815;s+=3){const p=pointAt(data.route,s);guard.push([p.x,p.z]);}
   strip(guard,.15,M.chrome,.67,3.55);

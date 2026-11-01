@@ -19,7 +19,7 @@ export function roadAltitude(s){
 const profile=[];for(let s=0;s<map.length;s+=5)profile.push(roadAltitude(s));profile.push(roadAltitude(map.length));
 export function profileAltitude(s){s=Math.max(0,Math.min(map.length,s));const i=Math.min(profile.length-2,Math.floor(s/5)),start=i*5,end=Math.min(map.length,start+5),t=(s-start)/(end-start);return profile[i]*(1-t)+profile[i+1]*t;}
 export const datum=roadAltitude(0);
-export function altitudeAt(x,z){const near=nearestOnLine(map.route,x,z),raw=rawAltitude(x,z);const t=Math.max(0,Math.min(1,(near.distance-4.5)/8));const blend=t*t*(3-2*t);return profileAltitude(near.s)*(1-blend)+raw*blend;}
+export function altitudeAt(x,z){const near=nearestOnLine(map.route,x,z),raw=rawAltitude(x,z);const t=Math.max(0,Math.min(1,(near.distance-6)/8));const blend=t*t*(3-2*t);return profileAltitude(near.s)*(1-blend)+raw*blend;}
 export const heightAt=(x,z)=>altitudeAt(x,z)-datum;
 export function roadPose(x,z,heading){const dx=Math.sin(heading),dz=Math.cos(heading),h=heightAt(x,z),grade=(heightAt(x+dx*2,z+dz*2)-heightAt(x-dx*2,z-dz*2))/4,cross=(heightAt(x+dz,z-dx)-heightAt(x-dz,z+dx))/2;return {height:h+.06,grade,pitch:-Math.atan(grade),roll:Math.atan(cross)};}
 export function slopeAcceleration(speed,grade,throttle=false,brake=false){if(brake||(!throttle&&Math.abs(speed)<.025))return 0;return -9.81*Math.sin(Math.atan(grade));}
