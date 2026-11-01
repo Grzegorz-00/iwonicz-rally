@@ -59,3 +59,11 @@ Testy geometrii sprawdzają ciągłość i długość ulicy, położenie końcó
 Jeśli potrzebny jest ponowny import: `python3 scripts/import-terrain.py /ścieżka/do/nmt.tif` (wymaga `rasterio`, `pyproj`, `numpy`; nie są zależnościami gry). Dokładny wycinek opisano w raporcie źródeł. Po pobraniu gra działa bez usług wysokościowych online.
 
 Nawierzchnia ma gęstszą siatkę niż teren i łagodnie dopasowany profil; grunt przy drodze dostosowuje się do niej. Budynki stoją poziomo na fundamentach, zamiast wyginać się ze zboczem. Samochód zmienia wysokość, pochylenie podłużne i poprzeczne, a składowa grawitacji wpływa na przyspieszenie. Kamera pozostaje za autem i podąża za jego wysokością. Licznik pokazuje wysokość n.p.m. i nachylenie w kierunku jazdy.
+
+## Okolica numeru 87 i sterowanie
+
+Przycisk **Start przy Zdrojowej 87** przenosi samochód na ulicę przy tym adresie; R ponawia start z wybranego miejsca. Adres zidentyfikowano po obrysie OSM, a srebrny dach i ogród sprawdzono na ortofotomapie. Trzy dodatkowe zdjęcia Mapillary posłużyły do poprawienia chodnika, bariery, zieleni i wyposażenia ulicy w sąsiedztwie. Fasada numeru 87 jest zasłonięta na zdjęciach — jej niepotwierdzone szczegóły pozostają uproszczone, co opisano w raporcie.
+
+Samochód zastąpiono kolejnym, nowym modelem w stylu 126p 600 z 1975 r. według drugiego arkusza rzutów: pionowe tylne lampy i dwie sekcje chłodzenia, zwężający się dach, poprawione szyby i profil nadwozia. Nie jest to gotowy model licencjonowany z serwisu ani skan.
+
+Na poboczu i trawie nie ma już dodatkowego spowalniania. Przy małej prędkości promień skrętu wynosi około 4,4 m; przy większej prędkości skręt łagodnieje. Nachylenie terenu i kolizje nadal wpływają na jazdę.

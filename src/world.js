@@ -68,6 +68,14 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   // Western sidewalk visible in Mapillary image 1265305397614531, local vicinity only.
   const observedSidewalk=[];for(let s=178;s<=225;s+=2) {const p=pointAt(data.route,s);observedSidewalk.push([p.x,p.z]);}
   strip(observedSidewalk,1.25,M.walk,.115,-3.85);strip(observedSidewalk,.15,M.curb,.15,-3.18);
+  // Street furniture and western paved walk confirmed in the three new Mapillary views.
+  const zone=[];for(let s=650;s<=830;s+=3){const p=pointAt(data.route,s);zone.push([p.x,p.z]);}
+  strip(zone,1.7,M.walk,.12,-4.05);strip(zone,.18,mat(0x986b5c),.13,-3.55);strip(zone,.14,M.curb,.16,-3.15);
+  strip(zone,.15,mat(0xc2bda6),.07,-2.98);
+  const guard=[];for(let s=680;s<=815;s+=3){const p=pointAt(data.route,s);guard.push([p.x,p.z]);}
+  strip(guard,.15,M.chrome,.67,3.55);
+  for(let s=680;s<815;s+=3){const p=pointAt(data.route,s);box(.06,.75,.08,M.chrome,p.x-Math.cos(p.heading)*3.55,.35,p.z+Math.sin(p.heading)*3.55);}
+  for(let s=650;s<=830;s+=38){const p=pointAt(data.route,s),x=p.x+Math.cos(p.heading)*5.3,z=p.z-Math.sin(p.heading)*5.3;cylinder(.075,.11,6,mat(0x92968f),x,3,z);const q=pointAt(data.route,Math.min(s+38,830));const xx=q.x+Math.cos(q.heading)*5.3,zz=q.z-Math.sin(q.heading)*5.3;const pts=[];for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector3(x+(xx-x)*t,5.8-Math.sin(t*Math.PI)*.45,z+(zz-z)*t));}if(s<802){const curve=new THREE.CatmullRomCurve3(pts);const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.012,4,false),M.black);wire.userData.conformTerrain=true;scene.add(wire);}}
   // True OSM outlines. Missing levels, roof forms and façade details remain estimates.
   for(const f of data.buildings) {
     const buildingStart=scene.children.length;
@@ -76,14 +84,15 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
     const cx=(minX+maxX)/2,cz=(minZ+maxZ)/2,near=nearestOnLine(data.route,cx,cz);
     const small=f.tags.building==='garage'||f.tags.building==='shed';
     const levels=Number.parseFloat(f.tags['building:levels'])||(small?1:2);
-    const h=Number.parseFloat(f.tags.height)||(levels*2.8+.3);
+    const is87=f.id==='347637101';
+    const h=is87?5.8:Number.parseFloat(f.tags.height)||(levels*2.8+.3);
     const shape=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));
     const geometry=new THREE.ExtrudeGeometry(shape,{depth:h+2,bevelEnabled:false});geometry.rotateX(-Math.PI/2);geometry.translate(0,-2,0);
-    const mesh=new THREE.Mesh(geometry,walls[Number(f.id)%walls.length]);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+    const mesh=new THREE.Mesh(geometry,(is87?walls[4]:walls[Number(f.id)%walls.length]));mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
     if(small||f.tags['roof:shape']==='flat')polygon(f.points,roofs[Number(f.id)%roofs.length],h+.02);
     // Roof ridge constrained to the actual footprint (no invented rectangular footprint).
     const roofHeight=Number.parseFloat(f.tags['roof:height'])||Math.min(2.8,Math.min(maxX-minX,maxZ-minZ)*.23);
-    if(f.tags['roof:shape']!=='flat'&&!small) {
+    if(!is87&&f.tags['roof:shape']!=='flat'&&!small) {
       const v=[],idx=[];
       if(pts.length===4){
         const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
@@ -94,6 +103,14 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
       const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(v,3));rg.setIndex(idx);rg.computeVertexNormals();const roof=new THREE.Mesh(rg,roofs[Number(f.id)%roofs.length]);roof.material.side=THREE.DoubleSide;roof.castShadow=true;scene.add(roof);
       if(near.distance<80){box(.65,1.2,.65,sill,cx+1,h+(pts.length===4?roofHeight*.65:.6),cz);}
 
+    }
+    if(is87){
+      // Silver, north-south gabled roof and recessed property layout seen in GUGiK ortho.
+      const x0=minX-.35,x1=maxX+.35,z0=minZ-.35,z1=maxZ+.35,ridge=(x0+x1)/2;
+      const v=[x0,h,z0,x0,h,z1,ridge,h+2.7,z1,ridge,h+2.7,z0,x1,h,z0,x1,h,z1];
+      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex([0,1,2,0,2,3,3,2,5,3,5,4,0,3,4,1,5,2]);g.computeVertexNormals();const silver=mat(0xaeb8b6,{metalness:.45,roughness:.5});silver.map=tiles;silver.userData.tile=2;const roof=new THREE.Mesh(g,silver);roof.material.side=THREE.DoubleSide;roof.castShadow=true;scene.add(roof);
+      box(.65,1.2,.65,sill,cx,h+2.5,cz+3);
+      const plaque=box(.045,.45,.55,new THREE.MeshStandardMaterial({map:label('87','#e8e4cf','#253a35')}),minX-.04,1.8,cz);plaque.rotation.y=Math.PI/2;
     }
     features.push({...f,minX,maxX,minZ,maxZ,height:h});
     // Modest windows on each real wall edge, only in the near-road corridor.
@@ -113,7 +130,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   // Low garden fences, inspired by the photographed frontages. Layout is approximate.
   for(const b of features){
     const cx=(b.minX+b.maxX)/2,cz=(b.minZ+b.maxZ)/2,p=nearestOnLine(data.route,cx,cz);
-    if(p.distance<9||p.distance>35)continue;
+    if(b.id==='347637101'||p.distance<9||p.distance>35)continue;
     const nx=Math.cos(p.heading),nz=-Math.sin(p.heading),side=Math.sign((cx-p.x)*nx+(cz-p.z)*nz);
     const radius=(b.maxX-b.minX)/2*Math.abs(nx)+(b.maxZ-b.minZ)/2*Math.abs(nz);
     const offset=Math.max(5,p.distance-radius-1.5),fx=p.x+nx*side*offset,fz=p.z+nz*side*offset;
@@ -130,7 +147,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   function tree(x,z,size=1,pine=false) {
     cylinder(.1*size,.2*size,3.6*size,M.trunk,x,1.8*size,z);
     if(pine){cylinder(0,1.25*size,4.3*size,M.darkleaf,x,4*size,z);}
-    else {const o=new THREE.Mesh(new THREE.IcosahedronGeometry(2.1*size,2),M.leaf);o.position.set(x,4.3*size,z);o.castShadow=true;scene.add(o);}
+    else {for(let i=0;i<4;i++){const o=new THREE.Mesh(new THREE.IcosahedronGeometry((1.4+random()*.55)*size,2),i%2?M.darkleaf:M.leaf);o.scale.set(1,.85+random()*.5,1);o.position.set(x+Math.cos(i*2.4)*size, (3.6+i*.45)*size,z+Math.sin(i*2.4)*size);o.castShadow=true;scene.add(o);}}
   }
   // Vegetation distribution follows mapped woodland; individual trees are illustrative.
   let treeCount=0;
@@ -152,6 +169,8 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
     const x=random()>.5?b.maxX+3.5:b.minX-3.5,z=b.minZ+random()*(b.maxZ-b.minZ);
     if(!features.some(o=>x>o.minX-2&&x<o.maxX+2&&z>o.minZ-2&&z<o.maxZ+2)&&drivable.every(r=>nearestOnLine(r.points,x,z).distance>r.width/2+2))tree(x,z,.8+random()*.4,random()>.75);
   }
+  // Vegetable beds visible north of number 87 in ortho; crop and cover details are illustrative.
+  for(let i=0;i<5;i++){box(2.1,.12,1.1,mat(0x6e5942),30,.03,744+i*2.2);for(let k=0;k<3;k++)box(1.9,.08,.08,M.darkleaf,30,.14,743.6+i*2.2+k*.3);}
   // The street signs mark real junctions; pole placement is illustrative.
   function streetSign(s,text) {const p=pointAt(data.route,s);const group=new THREE.Group();group.position.set(p.x-4.4*Math.cos(p.heading),0,p.z+4.4*Math.sin(p.heading));group.rotation.y=p.heading+Math.PI;scene.add(group);cylinder(.04,.04,2.7,M.chrome,0,1.35,0,group);box(2.2,.55,.06,new THREE.MeshStandardMaterial({map:label(text)}),0,2.45,0,group);}
   streetSign(15,'ul. Zdrojowa');streetSign(data.length-15,'ul. Długa');

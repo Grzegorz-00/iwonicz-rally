@@ -70,3 +70,25 @@ Dla drogi próbki wzdłuż osi są łagodnie filtrowane w sąsiedztwie ±6 m i r
 Geometria terenu, jezdni i chodników otrzymuje wysokości przed renderowaniem; budynki zachowują pion i poziome kondygnacje, a fundamenty sięgają poniżej lokalnego terenu. Auto opiera się na tym samym profilu; pochylenie wynika z różnicy wysokości przed/za autem i między stronami. Składowa grawitacji `−g·sin(arctan(nachylenie))` zmienia przyspieszenie. Hamulec zatrzymuje także na stoku; stojące auto ma uproszczone podtrzymanie postoju. To model jazdy, nie pełna symulacja zawieszenia.
 
 Daty konkretnego pomiaru NMT nie ustalono; datą pobrania jest 1 listopada 2026. Siatka 10 m nie odwzorowuje krawężników, kolein ani centymetrowych nierówności.
+
+## Zdrojowa 87 — dodatkowa analiza i korekty
+
+Adres potwierdzono w obiekcie OSM **way 347637101**, z tagami `addr:street=Zdrojowa`, `addr:housenumber=87`. Środek obrysu: około 49.572510 N, 21.792251 E. To cofnięty od ulicy dom po jej zachodniej stronie; nie pomylono go z budynkiem stojącym tuż przy chodniku.
+
+Obejrzano trzy dodatkowe, pełne widoki Mapillary, autor **czecko**:
+
+- [759802678521830](https://www.mapillary.com/app/?pKey=759802678521830&focus=photo), położenie wybrane w aplikacji około 49.572384, 21.792754.
+- [492372242585593](https://www.mapillary.com/app/?pKey=492372242585593&focus=photo), około 49.573064, 21.792858.
+- [415026326851271](https://www.mapillary.com/app/?pKey=415026326851271&focus=photo), około 49.571895, 21.792675.
+
+Początkowo aplikacja pokazywała pustą mapę. Kolejne wczytanie z dopuszczeniem cookies komponentów mapowych zadziałało; dopiero po obejrzeniu pełnych zdjęć zapisano obserwacje. Zdjęcia pokazują chodnik z betonowej kostki z czerwonym pasem, linię krawędziową (bez linii środkowej), metalową barierę po wschodniej stronie, słupy i przewody napowietrzne oraz gęstą roślinność i ogrodzenia. W kierunku południowym widoczny jest faktyczny spadek drogi. Dodano przybliżony odcinek tych elementów przy stacjach 650–830 m, nie zakładając ich identycznego występowania na całej ulicy. Obecności zaparkowanych samochodów, tablic remontowych i ograniczeń tymczasowych nie potraktowano jako stałych cech ulicy.
+
+Obejrzano też jeden widok ortofotomapy GUGiK HighResolution skupiony na numerze 87: środek 21.7922514 E, 49.5725098 N, EPSG:3857, BBOX ±125 m od środka w tym układzie, 900×900 px. Potwierdza jasny/srebrny dach ustawiony główną kalenicą północ–południe, nieregularny obrys domu, cofnięcie w głąb działki, dojazd i grządki od północy. Na tej podstawie numer 87 otrzymał osobny dach zamiast poprzedniej płaskiej nakrywy. Zachowano obrys OSM. Gra udostępnia przycisk „Start przy Zdrojowej 87”, aby łatwo obejrzeć ten odcinek.
+
+**Granice wierności:** nie odczytano numeru 87 na fotografii ulicznej; identyfikacja adresu pochodzi z OSM i położenia na ortofotomapie. Elewacja jest częściowo zasłonięta. Wysokość przyjęta w modelu (5,8 m do okapu), układ okien, kolory tynku, kominy i wysokość dachu są przybliżeniami, nie potwierdzonymi pomiarami konkretnej fasady. Ogród odtworzono poglądowo. Dodana tabliczka 87 pomaga rozpoznać obiekt; jej faktycznego umiejscowienia nie ustalono. Daty wykonania zdjęć i nalotu nadal nie są potwierdzone. Obrazy pozostają wyłącznie referencjami, bez kopiowania ich do repozytorium.
+
+## Kolejna przebudowa samochodu i sterowania
+
+Ponownie obejrzano arkusz 22870 i drugi publiczny podgląd [Fiat 126P (1975), The-Blueprints 1197](https://www.the-blueprints.com/vectordrawings/show/1197/fiat_126p/). Drugi pokazuje rzuty przodu, tyłu, boku i góry, z wymiarami 3054×1378×1302 mm i rozstawem osi 1840 mm. Poprzedni model miał błędny dominujący poziomy grill z tyłu i za szerokie tylne lampy. Zastąpiono go nową geometrią: węższe pionowe tylne lampy, dwie sekcje otworów chłodzenia, mniejsze przeszklenie, zwężający się dach, profilowane nadkola, podział drzwi, oddzielne wnętrze i stalowe koła z kołpakami. Wybrano wczesny styl 600; nie miesza się już opisu silnika 650 z tą wersją. Model jest autorski i proceduralny, nie fotogrametryczny. Podglądy oglądano bez pobierania płatnego pliku; nie są częścią zasobów gry. Próby uzyskania fotografii z innych serwisów zakończyły się odmową dostępu lub błędem — nie przedstawiamy ich jako obejrzanych zdjęć.
+
+Usunięto dodatkowy opór 1,4/s poza jezdnią: asfalt i trawa mają teraz ten sam opór bazowy 0,16/s i limit prędkości. Grawitacja i kolizje nadal działają. Skręt oparto na modelu rowerowym z rozstawem osi 1,84 m; przy małej prędkości promień toru środka tylnej osi wynosi około 4,4 m (wcześniej około 26 m). Przy większej prędkości ograniczono kąt kół, aby zachować kontrolę. Nie jest to pomiar fabrycznego koła zawracania; to świadomie bardziej zwrotne sterowanie gry.
