@@ -13,6 +13,8 @@ npm run dev -- --port 5173
 
 `npm run build` tworzy stronę statyczną w `dist/`. `npm run preview` uruchamia podgląd kompilacji. Gra działa bez zewnętrznych zapytań po pobraniu własnych plików.
 
+Model samochodu przebudowano według obejrzanego blueprintu The-Blueprints (arkusz 22870): proporcje wcześniejszego 126p, rozstaw osi 1,84 m, nadkola, szyby, wnętrze, lampy i chromowane detale. Kamera pościgowa jest wycentrowana za autem także w zakrętach. Nawierzchnia, dachy i tynki mają własne proceduralne tekstury; fasady otrzymały ramy, parapety i przybliżone ogrodzenia.
+
 ## Sterowanie
 
 - ↑ — gaz; ↓ — hamowanie, a po zatrzymaniu cofanie.

@@ -48,3 +48,11 @@ Na mapie potwierdzono pokrycie zdjęciami również północnego fragmentu. Pró
 **Z danych:** oś i długość ulicy, orientacja świata, obrysy i rozmieszczenie budynków, drogi boczne, cieki, położenie mostów, oznaczone chodniki, poligony lasów. Wysokości/poziomy budynków tylko tam, gdzie OSM zawiera odpowiednie tagi.
 
 **Ilustracyjne:** wysokości bez tagów (domy zwykle 2 kondygnacje, garaże 1), dachy bez odpowiednich danych, elewacje, rytm okien, barwy, szerokości dróg i cieków, barierki, dokładne położenie słupków tablic z nazwami ulic oraz indywidualne drzewa. Kolory i uproszczone bryły nawiązują do obejrzanych materiałów; nie są ręcznie wymodelowanymi kopiami konkretnych elewacji. Ogródki, pojazdy zaparkowane, przewody i szczegółowe wyposażenie ulicy nie zostały odtworzone. Nie należy opisywać gry jako fotorealistycznego skanu, pełnego cyfrowego bliźniaka ani narzędzia nawigacji.
+
+## Doprecyzowanie modelu 126p i detalu sceny
+
+Obejrzano publiczny podgląd blueprintu [Fiat 126p — The-Blueprints, arkusz 22870](https://www.the-blueprints.com/blueprints/cars/fiat/22870/view/fiat_126p/). Rysunek pokazuje dwie odmiany; dla wcześniejszej podaje długość 3054 mm, szerokość 1377 mm, wysokość 1335 mm i rozstaw osi 1840 mm. Na jego podstawie skorygowano proporcje, pochylenie szyb, linię dachu oraz pozycje kół. Podgląd obejrzano lokalnie; nie jest rozpowszechniany w repozytorium. Model pozostaje autorską geometrią proceduralną, nie gotowym skanem samochodu. Detale wyposażenia nie stanowią rekonstrukcji konkretnego egzemplarza/rocznika.
+
+Strony Wikipedia i Automobile-Catalog odrzucały żądania HTTP 403; nie wykorzystano ich jako zweryfikowanych źródeł. Publiczny katalog The-Blueprints i podgląd rysunku były dostępne bez logowania.
+
+Dodano własne proceduralne tekstury asfaltu, tynku, zieleni i pokrycia dachowego, ramy i parapety okien, dwuspadowe dachy dla czworokątnych obrysów oraz ogrodzenia przy zabudowie. Położenie ogrodzeń, kominy i detale fasad są przybliżeniami inspirowanymi oglądanymi zdjęciami, nie nowymi pomiarami. Nie skopiowano z zewnętrznych serwisów tekstur. Wielokątne, złożone dachy pozostają uproszczone. Kamera pościgowa ma zerowe przesunięcie boczne względem kierunku auta; nie dryfuje na bok w zakrętach.
