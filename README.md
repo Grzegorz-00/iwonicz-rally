@@ -1,35 +1,51 @@
 # Zdrojowa — mała podróż
 
-Przeglądarkowa gra 3D z autorskim modelem Fiata 126p, uzdrowiskową scenerią, minimapą i syntezowanym dźwiękiem silnika. Three.js + Vite, bez backendu i kluczy API.
+Przeglądarkowy symulator 3D z Fiatem 126p na **rzeczywistym przebiegu ul. Zdrojowej w Iwoniczu-Zdroju**. Three.js + Vite, bez backendu i kluczy API.
 
 ## Uruchomienie
 
-Node.js 22.12+ lub 24 (sprawdzone na 24.19.0).
+Node.js 22.12+ lub 24. Sprawdzone na Node 24.19.0.
 
 ```sh
 npm ci
 npm run dev -- --port 5173
 ```
 
-`npm run build` tworzy stronę statyczną w `dist/`. `npm run preview` uruchamia podgląd kompilacji.
+`npm run build` tworzy stronę statyczną w `dist/`. `npm run preview` uruchamia podgląd kompilacji. Gra działa bez zewnętrznych zapytań po pobraniu własnych plików.
 
 ## Sterowanie
 
 - ↑ — gaz; ↓ — hamowanie, a po zatrzymaniu cofanie.
 - ← / → — skręcanie; spacja — hamulec.
 - C — kamera za samochodem / z wnętrza; R — powrót na start.
-- Dźwięk włącza się osobnym przyciskiem. Na małych ekranach dostępne są przyciski dotykowe.
+- Przycisk dźwięku włącza syntezowany silnik. Na telefonie są przyciski dotykowe.
 
-## Wierność lokalizacji
+## Rzeczywista mapa i zakres rekonstrukcji
 
-**Sceneria i przebieg trasy są poglądowe, nie stanowią wiernej rekonstrukcji ulicy Zdrojowej w Iwoniczu-Zdroju.** Próby dostępu do OpenStreetMap, Geoportalu, Mapillary oraz Wikipedii zostały zablokowane przez politykę sieci środowiska (HTTP 403 na proxy). Nie pobrano i nie wykorzystano zdjęć, geometrii ani danych tych serwisów. Linki do dalszej weryfikacji są dostępne w grze w sekcji „O mapie i źródłach”. Przed rekonstrukcją rzeczywistej ulicy należy pozyskać i zweryfikować geometrię oraz materiały referencyjne wraz z warunkami licencyjnymi.
+Odcinek **1350,43 m**, od skrzyżowania Aleja Słoneczna / Feliksa Piwarskiego do ul. Długiej. Metryczna geometria osi ulicy, boczne drogi, 583 obrysy budynków w okolicy, Iwoniczanka, dopływy i dwa mosty pochodzą z OSM. Jezdnia nie ma wymyślonej linii środkowej. Minimapę, położenie geograficzne i kolizje oparto na tej samej geometrii; wielokąty budynków nie są zastępowane regularnymi prostokątami.
 
-Gra nie wykonuje zewnętrznych żądań po załadowaniu. Modele, materiały i minimapa są generowane lokalnie. Trasa ma ograniczony zasięg, a jej koniec sygnalizuje komunikat. Budynki zatrzymują samochód; jazda po poboczu spowalnia. Fizyka jest uproszczona, zręcznościowa.
+Przeanalizowano rzeczywistą ortofotomapę **Geoportalu/GUGiK HighResolution** oraz dwa zdjęcia **Mapillary, autor czecko**, w środkowym i południowym fragmencie ulicy. Na tej podstawie usunięto fikcyjną regularną aleję i uwzględniono rozproszoną zabudowę, zieleń ogrodową, paletę elewacji i lokalnie potwierdzony chodnik. [Raport źródeł i obserwacji](docs/research/zdrojowa.md) zawiera konkretne adresy, identyfikatory zdjęć i granice ustaleń.
 
-## Testy
+**To rekonstrukcja kartograficzna ze stylizowaną zabudową, nie fotorealistyczny skan.** Teren jest płaski; nie wykorzystano modelu wysokościowego. Brakujące wysokości, dachy, elewacje, okna, szerokości i pojedyncze drzewa są orientacyjne. Nie odtworzono całego wyposażenia ulicy. Zdjęcia i ortofotomapy nie są teksturami ani zasobami gry. Dat wykonania zdjęć nie potwierdzono. Fizyka Fiata jest uproszczona.
+
+## Dane i licencja
+
+© OpenStreetMap contributors — ODbL 1.0. Atrybucja jest stale widoczna w grze. [Baza pochodna JSON](public/data/zdrojowa.json) jest dostępna także jako `/data/zdrojowa.json` po zbudowaniu aplikacji. Zasady: [DATA-LICENSE.md](DATA-LICENSE.md).
+
+Odtworzenie importu z ręcznie pobranego wyciągu XML OSM:
 
 ```sh
-npm test
+python3 scripts/import-osm.py /sciezka/do/osm.xml
 ```
 
-Testy Playwright sprawdzają renderowanie WebGL, przyspieszanie, skręt, hamowanie, cofanie, reset, kamerę, okno źródeł oraz przyciski na telefonie. Konfiguracja używa Chromium z `/usr/bin/chromium` (dostosuj `executablePath`, jeśli przeglądarka znajduje się gdzie indziej). Serwer deweloperski jest uruchamiany automatycznie. Renderowanie programowe WebGL wymaga więcej czasu niż GPU.
+Importer zapisuje identyczne kopie danych w `src/data` (bundler) i `public/data` (pobieranie). Odróżnia główną Zdrojową od pobliskich dróg o tej samej nazwie. Nie pobiera samodzielnie zdjęć ani kafelków.
+
+## Sprawdzenie
+
+```sh
+npm run test:geo
+npm test
+npm run build
+```
+
+Testy geometrii sprawdzają ciągłość i długość ulicy, położenie końców, projekcję, mosty i wielokąty wklęsłe. Playwright sprawdza WebGL, jazdę, skręt, hamowanie, cofanie, reset, kamerę, opis źródeł i ekran mobilny. Chromium: `/usr/bin/chromium`; inną ścieżkę ustaw w `playwright.config.js`. Serwer testowy uruchamia się automatycznie. Renderowanie programowe WebGL jest wolniejsze od GPU.

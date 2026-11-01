@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
 test('car drives, brakes, reverses, changes camera and resets',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await page.waitForFunction(()=>window.__driving?.ready);
+ const initial=await page.evaluate(()=>window.__driving);expect(initial.routeLength).toBeGreaterThan(1300);expect(initial.buildingCount).toBeGreaterThan(100);
 
- await page.keyboard.down('ArrowUp');await expect.poll(()=>page.evaluate(()=>window.__driving.distance),{timeout:20000}).toBeGreaterThan(2);await page.keyboard.up('ArrowUp');const driven=await page.evaluate(()=>window.__driving);expect(driven.speed).toBeGreaterThan(1);expect(driven.z).toBeGreaterThan(1);expect(driven.distance).toBeGreaterThan(1);
+ await page.keyboard.down('ArrowUp');await expect.poll(()=>page.evaluate(()=>window.__driving.distance),{timeout:20000}).toBeGreaterThan(2);await page.keyboard.up('ArrowUp');const driven=await page.evaluate(()=>window.__driving);expect(driven.speed).toBeGreaterThan(1);expect(driven.z).toBeGreaterThan(initial.z);expect(driven.distance).toBeGreaterThan(1);
  await page.keyboard.down('ArrowRight');await page.waitForTimeout(400);await page.keyboard.up('ArrowRight');expect((await page.evaluate(()=>window.__driving)).x).not.toBe(driven.x);
  await page.keyboard.down('Space');await expect.poll(()=>page.evaluate(()=>Math.abs(window.__driving.speed)),{timeout:15000}).toBeLessThan(.2);await page.keyboard.up('Space');expect((await page.evaluate(()=>window.__driving)).speed).toBeLessThan(driven.speed/2);
  await page.keyboard.press('c');await expect.poll(()=>page.evaluate(()=>window.__driving.camera)).toBe(1);
  await page.keyboard.press('r');await expect.poll(()=>page.evaluate(()=>window.__driving.distance)).toBe(0);
  await page.keyboard.down('ArrowDown');await expect.poll(()=>page.evaluate(()=>window.__driving.distance),{timeout:15000}).toBeGreaterThan(.2);await page.keyboard.up('ArrowDown');expect((await page.evaluate(()=>window.__driving)).speed).toBeLessThan(0);
- await page.getByRole('button',{name:'O mapie i źródłach'}).click();await expect(page.locator('dialog')).toBeVisible();await expect(page.locator('dialog')).toContainText('poglądowe');await page.keyboard.press('Escape');expect(errors).toEqual([]);
+ await page.getByRole('button',{name:'O mapie i źródłach'}).click();await expect(page.locator('dialog')).toBeVisible();await expect(page.locator('dialog')).toContainText('Geoportal');await page.keyboard.press('Escape');expect(errors).toEqual([]);
 });
 test('mobile controls drive and page fits',async({page})=>{await page.setViewportSize({width:390,height:844});await page.goto('/');await page.waitForFunction(()=>window.__driving?.ready);const up=page.locator('[data-key="ArrowUp"]');await expect(up).toBeVisible();await up.dispatchEvent('pointerdown',{pointerId:1});await expect.poll(()=>page.evaluate(()=>window.__driving.distance),{timeout:15000}).toBeGreaterThan(.2);await up.dispatchEvent('pointerup',{pointerId:1});expect((await page.evaluate(()=>window.__driving)).distance).toBeGreaterThan(.1);expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);});
