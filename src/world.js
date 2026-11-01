@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {heightAt,grid} from './terrain.js';
 import {surface} from './surfaces.js';
 import data from './data/zdrojowa.json';
 import { insidePolygon, nearestOnLine, pointAt } from './geography.js';
@@ -16,9 +17,10 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   const pathMat = mat(0xb1a68f), meadow = mat(0xa5b18a), forest = mat(0x8b9b77);
   const rails = mat(0x9d9d80), windows = M.glass;
   const features = [], drivable = [];
-  box(1600,.3,2400,M.grass,-70,-.32,650);
+  const terrainGeometry=new THREE.PlaneGeometry((grid.nx-1)*grid.step,(grid.nz-1)*grid.step,grid.nx-1,grid.nz-1);terrainGeometry.rotateX(-Math.PI/2);terrainGeometry.translate(grid.x0+(grid.nx-1)*grid.step/2,-.15,grid.z0+(grid.nz-1)*grid.step/2);const terrainMesh=new THREE.Mesh(terrainGeometry,M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
   function strip(points, width, material, y=.025, offset=0) {
     if(points.length<2)return;
+    const dense=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/3));for(let k=0;k<n;k++)dense.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]);}dense.push(points.at(-1));points=dense;
     const vertices=[],indices=[];
     for(let i=0;i<points.length;i++) {
       const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)];
@@ -28,7 +30,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
       if(i<points.length-1){const k=i*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
     }
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();
-    const mesh=new THREE.Mesh(g,material);mesh.receiveShadow=true;scene.add(mesh);
+    const mesh=new THREE.Mesh(g,material);mesh.userData.conformTerrain=true;mesh.receiveShadow=true;scene.add(mesh);
   }
   function polygon(points, material, y) {
     if(points.length<4)return;
@@ -38,7 +40,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   for(const f of data.landcover) {
     if(f.points.length<4)continue;
     const wooded=f.tags.landuse==='forest'||f.tags.natural==='wood';
-    polygon(f.points,wooded?forest:meadow,-.12);
+    // Terrain itself supplies continuous ground; landcover polygons drive vegetation and minimap.
   }
   // OSM centre lines and tagged bridges, in their real positions.
   for(const f of data.waterways)strip(f.points,f.tags.name==='Iwoniczanka'?3.2:1.2,water,-.02);
@@ -68,6 +70,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   strip(observedSidewalk,1.25,M.walk,.115,-3.85);strip(observedSidewalk,.15,M.curb,.15,-3.18);
   // True OSM outlines. Missing levels, roof forms and façade details remain estimates.
   for(const f of data.buildings) {
+    const buildingStart=scene.children.length;
     const pts=f.points.slice(0,-1);if(pts.length<3)continue;
     const minX=Math.min(...pts.map(p=>p[0])),maxX=Math.max(...pts.map(p=>p[0])),minZ=Math.min(...pts.map(p=>p[1])),maxZ=Math.max(...pts.map(p=>p[1]));
     const cx=(minX+maxX)/2,cz=(minZ+maxZ)/2,near=nearestOnLine(data.route,cx,cz);
@@ -75,7 +78,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
     const levels=Number.parseFloat(f.tags['building:levels'])||(small?1:2);
     const h=Number.parseFloat(f.tags.height)||(levels*2.8+.3);
     const shape=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));
-    const geometry=new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:false});geometry.rotateX(-Math.PI/2);
+    const geometry=new THREE.ExtrudeGeometry(shape,{depth:h+2,bevelEnabled:false});geometry.rotateX(-Math.PI/2);geometry.translate(0,-2,0);
     const mesh=new THREE.Mesh(geometry,walls[Number(f.id)%walls.length]);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
     if(small||f.tags['roof:shape']==='flat')polygon(f.points,roofs[Number(f.id)%roofs.length],h+.02);
     // Roof ridge constrained to the actual footprint (no invented rectangular footprint).
@@ -105,6 +108,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
         const ledge=box(1.32,.08,.25,sill,wx, .91+floor*2.8,wz);ledge.rotation.y=angle;
       }
     }
+    for(const object of scene.children.slice(buildingStart))object.userData.terrainAnchor=[cx,cz];
   }
   // Low garden fences, inspired by the photographed frontages. Layout is approximate.
   for(const b of features){

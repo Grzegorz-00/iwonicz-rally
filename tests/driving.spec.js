@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 test('car drives, brakes, reverses, changes camera and resets',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await page.waitForFunction(()=>window.__driving?.ready);
- const initial=await page.evaluate(()=>window.__driving);expect(Math.abs(initial.cameraLateral)).toBeLessThan(.001);expect(initial.routeLength).toBeGreaterThan(1300);expect(initial.buildingCount).toBeGreaterThan(100);
+ const initial=await page.evaluate(()=>window.__driving);expect(Math.abs(initial.cameraLateral)).toBeLessThan(.001);expect(initial.altitude).toBeGreaterThan(380);expect(initial.altitude).toBeLessThan(386);expect(Math.abs(initial.grade)).toBeGreaterThan(.005);expect(Math.abs(initial.pitch)).toBeGreaterThan(.005);expect(initial.routeLength).toBeGreaterThan(1300);expect(initial.buildingCount).toBeGreaterThan(100);
 
  await page.keyboard.down('ArrowUp');await expect.poll(()=>page.evaluate(()=>window.__driving.distance),{timeout:20000}).toBeGreaterThan(2);await page.keyboard.up('ArrowUp');const driven=await page.evaluate(()=>window.__driving);expect(driven.speed).toBeGreaterThan(1);expect(driven.z).toBeGreaterThan(initial.z);expect(driven.distance).toBeGreaterThan(1);
  await page.keyboard.down('ArrowRight');await expect.poll(()=>page.evaluate(()=>window.__driving.x),{timeout:15000}).not.toBe(driven.x);await page.keyboard.up('ArrowRight');expect((await page.evaluate(()=>window.__driving)).x).not.toBe(driven.x);expect(Math.abs((await page.evaluate(()=>window.__driving)).cameraLateral)).toBeLessThan(.001);

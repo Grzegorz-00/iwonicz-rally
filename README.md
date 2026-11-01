@@ -28,7 +28,7 @@ Odcinek **1350,43 m**, od skrzyżowania Aleja Słoneczna / Feliksa Piwarskiego d
 
 Przeanalizowano rzeczywistą ortofotomapę **Geoportalu/GUGiK HighResolution** oraz dwa zdjęcia **Mapillary, autor czecko**, w środkowym i południowym fragmencie ulicy. Na tej podstawie usunięto fikcyjną regularną aleję i uwzględniono rozproszoną zabudowę, zieleń ogrodową, paletę elewacji i lokalnie potwierdzony chodnik. [Raport źródeł i obserwacji](docs/research/zdrojowa.md) zawiera konkretne adresy, identyfikatory zdjęć i granice ustaleń.
 
-**To rekonstrukcja kartograficzna ze stylizowaną zabudową, nie fotorealistyczny skan.** Teren jest płaski; nie wykorzystano modelu wysokościowego. Brakujące wysokości, dachy, elewacje, okna, szerokości i pojedyncze drzewa są orientacyjne. Nie odtworzono całego wyposażenia ulicy. Zdjęcia i ortofotomapy nie są teksturami ani zasobami gry. Dat wykonania zdjęć nie potwierdzono. Fizyka Fiata jest uproszczona.
+**To rekonstrukcja kartograficzna ze stylizowaną zabudową, nie fotorealistyczny skan.** Teren i droga korzystają z rzeczywistych wysokości NMT GUGiK; odcinek opada o około 25 m. Profil drogi jest lokalnie wygładzony, a pomosty interpolowane z wysokości przyczółków. Siatka gry ma krok 10 m, więc nie odwzorowuje drobnych nierówności. Brakujące wysokości, dachy, elewacje, okna, szerokości i pojedyncze drzewa są orientacyjne. Nie odtworzono całego wyposażenia ulicy. Zdjęcia i ortofotomapy nie są teksturami ani zasobami gry. Dat wykonania zdjęć nie potwierdzono. Fizyka Fiata jest uproszczona.
 
 ## Dane i licencja
 
@@ -51,3 +51,11 @@ npm run build
 ```
 
 Testy geometrii sprawdzają ciągłość i długość ulicy, położenie końców, projekcję, mosty i wielokąty wklęsłe. Playwright sprawdza WebGL, jazdę, skręt, hamowanie, cofanie, reset, kamerę, opis źródeł i ekran mobilny. Chromium: `/usr/bin/chromium`; inną ścieżkę ustaw w `playwright.config.js`. Serwer testowy uruchamia się automatycznie. Renderowanie programowe WebGL jest wolniejsze od GPU.
+
+## Wysokości i nachylenie
+
+`src/data/terrain.json` to siatka wysokości GUGiK NMT GRID1, PL-KRON86-NH; kopia do pobrania znajduje się w `public/data/terrain.json`. WCS Geoportalu zwrócił numeryczny GeoTIFF EPSG:2180 z wysokościami float32, pobrany z krokiem 5 m, następnie przeliczony na lokalną siatkę 10 m. Nie użyto kolorów mapy hipsometrycznej jako wysokości. Dane obejmują też zbocza doliny.
+
+Jeśli potrzebny jest ponowny import: `python3 scripts/import-terrain.py /ścieżka/do/nmt.tif` (wymaga `rasterio`, `pyproj`, `numpy`; nie są zależnościami gry). Dokładny wycinek opisano w raporcie źródeł. Po pobraniu gra działa bez usług wysokościowych online.
+
+Nawierzchnia ma gęstszą siatkę niż teren i łagodnie dopasowany profil; grunt przy drodze dostosowuje się do niej. Budynki stoją poziomo na fundamentach, zamiast wyginać się ze zboczem. Samochód zmienia wysokość, pochylenie podłużne i poprzeczne, a składowa grawitacji wpływa na przyspieszenie. Kamera pozostaje za autem i podąża za jego wysokością. Licznik pokazuje wysokość n.p.m. i nachylenie w kierunku jazdy.

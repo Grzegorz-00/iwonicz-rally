@@ -34,7 +34,7 @@ Obejrzano dwa pojedyncze widoki WMS `Raster`, EPSG:3857, JPEG: zbliżenie środk
 
 Ortofotomapa pokazuje rozproszoną zabudowę mieszkalną, nierówną linię zabudowy, ogrody, dojazdy i stoki z lasami po bokach doliny. Domy mają dachy m.in. szare, czerwone i brązowe. W północnej części zabudowa jest rzadsza, występują pola/łąki. To uzasadnia usunięcie poprzedniej fikcyjnej, równej alei kamienic i regularnych rzędów drzew.
 
-Ortofotomapa posłużyła do kontroli kompozycji otoczenia i palety. Nie trasowano nowych obrysów z obrazu, nie połączono obrazu z bazą OSM, nie wgrano go jako tekstury ani pliku do repozytorium. Teren pozostaje płaski; nie pozyskano NMT. Zieleń i obiekty nie tworzą modelu fotogrametrycznego.
+Ortofotomapa posłużyła do kontroli kompozycji otoczenia i palety. Nie trasowano nowych obrysów z obrazu, nie połączono obrazu z bazą OSM, nie wgrano go jako tekstury ani pliku do repozytorium. Na etapie analizy ortofotomapy teren był płaski; później dodano liczbowy NMT opisany poniżej. Zieleń i obiekty nie tworzą modelu fotogrametrycznego.
 
 ## Mapillary — rzeczywiście obejrzane zdjęcia
 
@@ -56,3 +56,17 @@ Obejrzano publiczny podgląd blueprintu [Fiat 126p — The-Blueprints, arkusz 22
 Strony Wikipedia i Automobile-Catalog odrzucały żądania HTTP 403; nie wykorzystano ich jako zweryfikowanych źródeł. Publiczny katalog The-Blueprints i podgląd rysunku były dostępne bez logowania.
 
 Dodano własne proceduralne tekstury asfaltu, tynku, zieleni i pokrycia dachowego, ramy i parapety okien, dwuspadowe dachy dla czworokątnych obrysów oraz ogrodzenia przy zabudowie. Położenie ogrodzeń, kominy i detale fasad są przybliżeniami inspirowanymi oglądanymi zdjęciami, nie nowymi pomiarami. Nie skopiowano z zewnętrznych serwisów tekstur. Wielokątne, złożone dachy pozostają uproszczone. Kamera pościgowa ma zerowe przesunięcie boczne względem kierunku auta; nie dryfuje na bok w zakrętach.
+
+## Liczbowy model terenu — GUGiK NMT
+
+Pozyskano rzeczywisty raster wysokości, nie obraz cieniowania: oficjalny WCS `https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WCS/DigitalTerrainModelFormatTIFF`, warstwa `DTM_PL-KRON86-NH_TIFF`. GetCapabilities i DescribeCoverage potwierdziły format TIFF, układ EPSG:2180 i brak ograniczeń dostępu (`accessConstraints: none`).
+
+Żądanie WCS 1.0.0 GetCoverage: BBOX `701014,191894,702714,194394`, CRS/RESPONSE_CRS `EPSG:2180`, RESX/RESY `5`, FORMAT `image/tiff`, INTERPOLATION `bilinear`. Zwrócono prawidłowy GeoTIFF float32, 340×500 pikseli, 680959 bajtów. Współrzędne zweryfikowano przez reprojekcję pyproj, wysokości odczytano rasterio. SHA256 źródła jest w metadanych JSON. Nie użyto zastępczych wysokości Open-Meteo; kontrolne zapytanie tego API wskazało jedynie podobny ogólny kierunek spadku.
+
+Importer przelicza próbki na lokalny układ gry, z krokiem 10 m, metodą biliniową. Odrzuca brakujące próbki, wartości nodata i zakres poza wycinkiem. Siatka 131×211 obejmuje X od −650 do 650 m oraz Z od −350 do 1750 m; wysokości w tym wycinku wynoszą około 342–478 m w układzie PL-KRON86-NH. Poza brzegiem siatki interpolator ogranicza współrzędne do brzegu; obszar jazdy leży wewnątrz pokrycia.
+
+Dla drogi próbki wzdłuż osi są łagodnie filtrowane w sąsiedztwie ±6 m i resamplowane co 5 m. Profil przy południowym końcu wynosi około 382,75 m, przy Długiej 358,01 m: spadek 24,74 m. Są to wartości przetworzonego modelu, a nie niwelacja geodezyjna nawierzchni. Wąski pas jezdni jest wyrównany poprzecznie, a grunt łagodnie przechodzi do surowego NMT w pasie do 12,5 m od osi. Pomosty nad ciekami interpolowane są z poziomów przyczółków, gdyż NMT może pokazywać grunt poniżej mostu. Dokładnych rzędnych pomostów nie ustalono.
+
+Geometria terenu, jezdni i chodników otrzymuje wysokości przed renderowaniem; budynki zachowują pion i poziome kondygnacje, a fundamenty sięgają poniżej lokalnego terenu. Auto opiera się na tym samym profilu; pochylenie wynika z różnicy wysokości przed/za autem i między stronami. Składowa grawitacji `−g·sin(arctan(nachylenie))` zmienia przyspieszenie. Hamulec zatrzymuje także na stoku; stojące auto ma uproszczone podtrzymanie postoju. To model jazdy, nie pełna symulacja zawieszenia.
+
+Daty konkretnego pomiaru NMT nie ustalono; datą pobrania jest 1 listopada 2026. Siatka 10 m nie odwzorowuje krawężników, kolein ani centymetrowych nierówności.
