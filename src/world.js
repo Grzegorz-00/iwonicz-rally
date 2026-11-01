@@ -1,35 +1,24 @@
 import * as THREE from 'three';
 import {ribbonGeometry,groundGeometry} from './road-geometry.js';
 import {heightAt,grid} from './terrain.js';
-import {surface} from './surfaces.js';
+import {vegetationFactory} from './foliage.js';
+import {architectureKit} from './architecture.js';
 import data from './data/zdrojowa.json';
 import { insidePolygon, nearestOnLine, pointAt } from './geography.js';
 export { data };
 
-export function createWorld(scene, { mat, M, box, cylinder, label }) {
+export function createWorld(scene, { mat, M, box, cylinder, label,materials }) {
   let seed = 126;
   const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-  const wallPalette = [0xd5cfb9,0xcbc6b8,0xe5d8b8,0xc6cecc,0xe6ddc9];
-  const walls = wallPalette.map(c => mat(c));
-  const roofs = [0x767b77,0x8e5945,0x575e5c].map(c => mat(c));
-  const plaster=surface('plaster'),tiles=surface('roof');for(const m of walls){m.map=plaster;m.userData.tile=2;}for(const m of roofs){m.map=tiles;m.userData.tile=2;}
-  const frame=mat(0xe0ddd0),sill=mat(0xb4b0a3),fence=mat(0x626552);
+  const sill=materials.plaster.clone();sill.color.set(0x9da39e);const fence=mat(0x626552);
+  const vegetation=vegetationFactory();
+  const architecture=architectureKit({scene,mat,M,box,cylinder,materials,route:data.route,vegetation});
   const water = mat(0x668d86, {roughness:.3});
   const pathMat = mat(0xb1a68f), meadow = mat(0xa5b18a), forest = mat(0x8b9b77);
-  const rails = mat(0x9d9d80), windows = M.glass;
+  const rails = mat(0x9d9d80);
   const features = [], drivable = [];
   const terrainMesh=new THREE.Mesh(groundGeometry(grid,data.route),M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
   function strip(points,width,material,y=.025,offset=0){if(points.length<2)return;const mesh=new THREE.Mesh(ribbonGeometry(points,width,y,offset,[M.road,M.walk,M.curb,pathMat].includes(material)?.5:0),material);mesh.userData.conformTerrain=true;mesh.receiveShadow=true;scene.add(mesh);}
-  function polygon(points, material, y) {
-    if(points.length<4)return;
-    const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z)));
-    const mesh=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);mesh.rotation.x=-Math.PI/2;mesh.position.y=y;mesh.receiveShadow=true;scene.add(mesh);
-  }
-  for(const f of data.landcover) {
-    if(f.points.length<4)continue;
-    const wooded=f.tags.landuse==='forest'||f.tags.natural==='wood';
-    // Terrain itself supplies continuous ground; landcover polygons drive vegetation and minimap.
-  }
   // OSM centre lines and tagged bridges, in their real positions.
   for(const f of data.waterways)strip(f.points,f.tags.name==='Iwoniczanka'?3.2:1.2,water,-.02);
   for(const f of data.roads) {
@@ -64,57 +53,8 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
   strip(guard,.15,M.chrome,.67,3.55);
   for(let s=680;s<815;s+=3){const p=pointAt(data.route,s);box(.06,.75,.08,M.chrome,p.x-Math.cos(p.heading)*3.55,.35,p.z+Math.sin(p.heading)*3.55);}
   for(let s=650;s<=830;s+=38){const p=pointAt(data.route,s),x=p.x+Math.cos(p.heading)*5.3,z=p.z-Math.sin(p.heading)*5.3;cylinder(.075,.11,6,mat(0x92968f),x,3,z);const q=pointAt(data.route,Math.min(s+38,830));const xx=q.x+Math.cos(q.heading)*5.3,zz=q.z-Math.sin(q.heading)*5.3;const pts=[];for(let i=0;i<=12;i++){const t=i/12;pts.push(new THREE.Vector3(x+(xx-x)*t,5.8-Math.sin(t*Math.PI)*.45,z+(zz-z)*t));}if(s<802){const curve=new THREE.CatmullRomCurve3(pts);const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.012,4,false),M.black);wire.userData.conformTerrain=true;scene.add(wire);}}
-  // True OSM outlines. Missing levels, roof forms and façade details remain estimates.
-  for(const f of data.buildings) {
-    const buildingStart=scene.children.length;
-    const pts=f.points.slice(0,-1);if(pts.length<3)continue;
-    const minX=Math.min(...pts.map(p=>p[0])),maxX=Math.max(...pts.map(p=>p[0])),minZ=Math.min(...pts.map(p=>p[1])),maxZ=Math.max(...pts.map(p=>p[1]));
-    const cx=(minX+maxX)/2,cz=(minZ+maxZ)/2,near=nearestOnLine(data.route,cx,cz);
-    const small=f.tags.building==='garage'||f.tags.building==='shed';
-    const levels=Number.parseFloat(f.tags['building:levels'])||(small?1:2);
-    const is87=f.id==='347637101';
-    const h=is87?5.8:Number.parseFloat(f.tags.height)||(levels*2.8+.3);
-    const shape=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));
-    const geometry=new THREE.ExtrudeGeometry(shape,{depth:h+2,bevelEnabled:false});geometry.rotateX(-Math.PI/2);geometry.translate(0,-2,0);
-    const mesh=new THREE.Mesh(geometry,(is87?walls[4]:walls[Number(f.id)%walls.length]));mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
-    if(small||f.tags['roof:shape']==='flat')polygon(f.points,roofs[Number(f.id)%roofs.length],h+.02);
-    // Roof ridge constrained to the actual footprint (no invented rectangular footprint).
-    const roofHeight=Number.parseFloat(f.tags['roof:height'])||Math.min(2.8,Math.min(maxX-minX,maxZ-minZ)*.23);
-    if(!is87&&f.tags['roof:shape']!=='flat'&&!small) {
-      const v=[],idx=[];
-      if(pts.length===4){
-        const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
-        const q=dist(pts[0],pts[1])<dist(pts[1],pts[2])?pts:[pts[1],pts[2],pts[3],pts[0]];
-        const r1=[(q[0][0]+q[1][0])/2,h+roofHeight,(q[0][1]+q[1][1])/2],r2=[(q[2][0]+q[3][0])/2,h+roofHeight,(q[2][1]+q[3][1])/2];
-        v.push(...q.flatMap(([x,z])=>[x,h,z]),...r1,...r2);idx.push(0,3,5,0,5,4,1,4,5,1,5,2,0,4,1,2,5,3);
-      }else{for(const [x,z] of pts)v.push(x,h,z);const triangulated=THREE.ShapeUtils.triangulateShape(pts.map(([x,z])=>new THREE.Vector2(x,z)),[]);idx.push(...triangulated.flat());}
-      const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(v,3));rg.setIndex(idx);rg.computeVertexNormals();const roof=new THREE.Mesh(rg,roofs[Number(f.id)%roofs.length]);roof.material.side=THREE.DoubleSide;roof.castShadow=true;scene.add(roof);
-      if(near.distance<80){box(.65,1.2,.65,sill,cx+1,h+(pts.length===4?roofHeight*.65:.6),cz);}
-
-    }
-    if(is87){
-      // Silver, north-south gabled roof and recessed property layout seen in GUGiK ortho.
-      const x0=minX-.35,x1=maxX+.35,z0=minZ-.35,z1=maxZ+.35,ridge=(x0+x1)/2;
-      const v=[x0,h,z0,x0,h,z1,ridge,h+2.7,z1,ridge,h+2.7,z0,x1,h,z0,x1,h,z1];
-      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex([0,1,2,0,2,3,3,2,5,3,5,4,0,3,4,1,5,2]);g.computeVertexNormals();const silver=mat(0xaeb8b6,{metalness:.45,roughness:.5});silver.map=tiles;silver.userData.tile=2;const roof=new THREE.Mesh(g,silver);roof.material.side=THREE.DoubleSide;roof.castShadow=true;scene.add(roof);
-      box(.65,1.2,.65,sill,cx,h+2.5,cz+3);
-      const plaque=box(.045,.45,.55,new THREE.MeshStandardMaterial({map:label('87','#e8e4cf','#253a35')}),minX-.04,1.8,cz);plaque.rotation.y=Math.PI/2;
-    }
-    features.push({...f,minX,maxX,minZ,maxZ,height:h});
-    // Modest windows on each real wall edge, only in the near-road corridor.
-    if(near.distance<85&&!small)for(let i=0;i<pts.length;i++) {
-      const a=pts[i],b=pts[(i+1)%pts.length],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
-      if(len<2.6)continue;
-      for(let n=1;n<=Math.floor(len/3);n++)for(let floor=0;floor<Math.min(levels,5);floor++) {
-        const t=n/(Math.floor(len/3)+1),wx=a[0]+dx*t,wz=a[1]+dz*t;
-        const o=box(1.05,1.3,.035,windows,wx,1.65+floor*2.8,wz);o.rotation.y=Math.atan2(-dz,dx);o.castShadow=false;
-        const angle=Math.atan2(-dz,dx);
-        for(const [w,hh,ox,oy] of [[1.2,.07,0,.69],[1.2,.09,0,-.69],[.065,1.4,-.57,0],[.065,1.4,.57,0],[.045,1.3,0,0]]){const trim=box(w,hh,.09,frame,wx+Math.cos(angle)*ox,1.65+floor*2.8+oy,wz-Math.sin(angle)*ox);trim.rotation.y=angle;trim.castShadow=false;}
-        const ledge=box(1.32,.08,.25,sill,wx, .91+floor*2.8,wz);ledge.rotation.y=angle;
-      }
-    }
-    for(const object of scene.children.slice(buildingStart))object.userData.terrainAnchor=[cx,cz];
-  }
+  // Each house retains its OSM footprint; photographed frontages have explicit profiles.
+  for(const f of data.buildings){const house=architecture.house(f);if(house)features.push(house);}
   // Low garden fences, inspired by the photographed frontages. Layout is approximate.
   for(const b of features){
     const cx=(b.minX+b.maxX)/2,cz=(b.minZ+b.maxZ)/2,p=nearestOnLine(data.route,cx,cz);
@@ -132,11 +72,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
       for(let k=-.8;k<1;k+=.32){const picket=box(.025,.78,.025,fence,x+Math.sin(p.heading)*k,.65,z+Math.cos(p.heading)*k);}
     }
   }
-  function tree(x,z,size=1,pine=false) {
-    cylinder(.1*size,.2*size,3.6*size,M.trunk,x,1.8*size,z);
-    if(pine){cylinder(0,1.25*size,4.3*size,M.darkleaf,x,4*size,z);}
-    else {for(let i=0;i<4;i++){const o=new THREE.Mesh(new THREE.IcosahedronGeometry((1.4+random()*.55)*size,2),i%2?M.darkleaf:M.leaf);o.scale.set(1,.85+random()*.5,1);o.position.set(x+Math.cos(i*2.4)*size, (3.6+i*.45)*size,z+Math.sin(i*2.4)*size);o.castShadow=true;scene.add(o);}}
-  }
+  function tree(x,z,size=1,pine=false){cylinder(.08*size,.18*size,4.5*size,M.trunk,x,2.25*size,z);vegetation.add(x,z,size,pine?'pine':'broadleaf');}
   // Vegetation distribution follows mapped woodland; individual trees are illustrative.
   let treeCount=0;
   for(const f of data.landcover.filter(f=>f.tags.landuse==='forest'||f.tags.natural==='wood')) {
@@ -169,6 +105,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label }) {
     nearest:(x,z)=>nearestOnLine(data.route,x,z),
     onRoad:(x,z)=>drivable.some(r=>nearestOnLine(r.points,x,z).distance<r.width/2),
     collides:(x,z)=>features.some(b=>x>=b.minX-1&&x<=b.maxX+1&&z>=b.minZ-1&&z<=b.maxZ+1&&(insidePolygon(b.points,x,z)||nearestOnLine(b.points,x,z).distance<1)),
-    buildings:features,
+    installVegetation:options=>vegetation.install(scene,options),
+    buildings:features,referenceBuildings:features.filter(f=>f.reference).map(f=>f.id),
   };
 }

@@ -5,3 +5,4 @@ main::before{content:'';position:absolute;top:108px;left:0;width:520px;height:43
 .intro,main::before{transition:opacity 1.2s}.driving .intro,.driving main::before{opacity:0;pointer-events:none}
 #notice{bottom:170px;left:50%;background:#f5f3e7ec}.dashboard{height:88px}.car-label{bottom:164px}@media(max-width:800px){#notice{bottom:192px}.car-label{bottom:245px}}
 #go87{font-size:9px;margin-top:6px;border:1px solid #89978066;background:#f7f5e8;padding:6px 9px;border-radius:3px}@media(max-width:800px){#go87{font-size:7px;padding:5px}}
+.scene-link{display:block;width:max-content;margin-top:16px;font-size:11px;color:#41594c;text-underline-offset:4px;pointer-events:auto}.driving .scene-link{pointer-events:none}@media(max-width:800px){.scene-link{font-size:9px;margin-top:10px}}

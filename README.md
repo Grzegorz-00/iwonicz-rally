@@ -13,7 +13,7 @@ npm run dev -- --port 5173
 
 `npm run build` tworzy stronę statyczną w `dist/`. `npm run preview` uruchamia podgląd kompilacji. Gra działa bez zewnętrznych zapytań po pobraniu własnych plików.
 
-Model samochodu przebudowano według obejrzanego blueprintu The-Blueprints (arkusz 22870): proporcje wcześniejszego 126p, rozstaw osi 1,84 m, nadkola, szyby, wnętrze, lampy i chromowane detale. Kamera pościgowa jest wycentrowana za autem także w zakrętach. Nawierzchnia, dachy i tynki mają własne proceduralne tekstury; fasady otrzymały ramy, parapety i przybliżone ogrodzenia.
+Model samochodu przebudowano według obejrzanego blueprintu The-Blueprints (arkusz 22870): proporcje wcześniejszego 126p, rozstaw osi 1,84 m, nadkola, szyby, wnętrze, lampy i chromowane detale. Kamera pościgowa jest wycentrowana za autem także w zakrętach. Nawierzchnia i dachy korzystają teraz z fotograficznych materiałów PBR CC0; tynki z fotograficznych map mikrodetalu, a wybrane fasady z osobnych profili odniesionych do zdjęcia ulicznego.
 
 ## Sterowanie
 
@@ -26,9 +26,9 @@ Model samochodu przebudowano według obejrzanego blueprintu The-Blueprints (arku
 
 Odcinek **1350,43 m**, od skrzyżowania Aleja Słoneczna / Feliksa Piwarskiego do ul. Długiej. Metryczna geometria osi ulicy, boczne drogi, 583 obrysy budynków w okolicy, Iwoniczanka, dopływy i dwa mosty pochodzą z OSM. Jezdnia nie ma wymyślonej linii środkowej. Minimapę, położenie geograficzne i kolizje oparto na tej samej geometrii; wielokąty budynków nie są zastępowane regularnymi prostokątami.
 
-Przeanalizowano rzeczywistą ortofotomapę **Geoportalu/GUGiK HighResolution** oraz dwa zdjęcia **Mapillary, autor czecko**, w środkowym i południowym fragmencie ulicy. Na tej podstawie usunięto fikcyjną regularną aleję i uwzględniono rozproszoną zabudowę, zieleń ogrodową, paletę elewacji i lokalnie potwierdzony chodnik. [Raport źródeł i obserwacji](docs/research/zdrojowa.md) zawiera konkretne adresy, identyfikatory zdjęć i granice ustaleń.
+Przeanalizowano rzeczywistą ortofotomapę **Geoportalu/GUGiK HighResolution** oraz pięć zdjęć **Mapillary, autor czecko**, w środkowym i południowym fragmencie ulicy. Na tej podstawie usunięto fikcyjną regularną aleję i uwzględniono rozproszoną zabudowę, zieleń ogrodową, paletę elewacji i lokalnie potwierdzony chodnik. [Raport źródeł i obserwacji](docs/research/zdrojowa.md) zawiera konkretne adresy, identyfikatory zdjęć i granice ustaleń.
 
-**To rekonstrukcja kartograficzna ze stylizowaną zabudową, nie fotorealistyczny skan.** Teren i droga korzystają z rzeczywistych wysokości NMT GUGiK; odcinek opada o około 25 m. Profil drogi jest lokalnie wygładzony, a pomosty interpolowane z wysokości przyczółków. Siatka gry ma krok 10 m, więc nie odwzorowuje drobnych nierówności. Brakujące wysokości, dachy, elewacje, okna, szerokości i pojedyncze drzewa są orientacyjne. Nie odtworzono całego wyposażenia ulicy. Zdjęcia i ortofotomapy nie są teksturami ani zasobami gry. Dat wykonania zdjęć nie potwierdzono. Fizyka Fiata jest uproszczona.
+**To rekonstrukcja kartograficzna ze stylizowaną zabudową, nie fotorealistyczny skan.** Teren i droga korzystają z rzeczywistych wysokości NMT GUGiK; odcinek opada o około 25 m. Profil drogi jest lokalnie wygładzony, a pomosty interpolowane z wysokości przyczółków. Siatka gry ma krok 10 m, więc nie odwzorowuje drobnych nierówności. Brakujące wysokości, dachy, elewacje, okna, szerokości i pojedyncze drzewa są orientacyjne. Nie odtworzono całego wyposażenia ulicy. Zdjęcia i ortofotomapy nie są teksturami ani zasobami gry. Dla ujęcia 1265305397614531 metadane potwierdzają 4 lipca 2022; dat pozostałych zdjęć nie potwierdzono. Fizyka Fiata jest uproszczona.
 
 ## Dane i licencja
 
@@ -69,3 +69,11 @@ Samochód zastąpiono kolejnym, nowym modelem w stylu 126p 600 z 1975 r. według
 Na poboczu i trawie nie ma już dodatkowego spowalniania. Przy małej prędkości promień skrętu wynosi około 4,4 m; przy większej prędkości skręt łagodnieje. Nachylenie terenu i kolizje nadal wpływają na jazdę.
 
 Skręcanie narasta łagodnie, a krótkie naciśnięcia strzałek służą do drobnych korekt. Przy większej prędkości kąt skrętu jest mocniej ograniczony. Zachodni chodnik i główna jezdnia tworzą ciągłe pasy. Gęstsza siatka podłoża przy drodze zapobiega przebijaniu trawy przez nawierzchnię; źródłowa rozdzielczość danych NMT pozostaje bez zmian. Przedłużenie zachodniego chodnika na całą trasę jest uzupełnieniem gry, nie nowym ustaleniem kartograficznym.
+
+## Fotograficzne materiały i wille ze zdjęć
+
+Link **Zobacz wille ze zdjęć** (lub `?start=villas`) pokazuje odcinek z osobnymi modelami szarej i drewnianej niebieskoszarej fasady oraz sąsiedniej jasnej grupy. Kierunek widoku i przypisanie do obrysów sprawdzono z metadanymi zdjęcia. Dokładność powiązania poszczególnych numerów i ukryte części fasad opisano w `src/data/facade-references.json` i raporcie źródeł. Pozostałe budynki nadal są przybliżeniami — nie ogłaszamy całej ulicy jako fotorealistycznego skanu.
+
+Asfalt, kostka, grunt i pokrycia dachów korzystają z lokalnych fotograficznych map PBR 1K; tynki z fotograficznych normalnych i szorstkości, z barwą farby dobraną w modelu. HDRI daje niebo i odbicia. Zasoby Poly Haven są na CC0; autorzy, adresy i zweryfikowane sumy kontrolne: `public/materials/sources.json`. Łącznie około 11,4 MB, bez zapytań do dostawcy przy uruchamianiu gry. Zdjęcia Mapillary służą wyłącznie jako odniesienie; nie skopiowano ich na elewacje.
+
+Odtworzenie pobrania: `python3 scripts/fetch-materials.py`. Nie jest potrzebne do zwykłego `npm ci` / `npm run build` — zasoby są częścią repozytorium. Testy sprawdzają też kompletność i sumy kontrolne materiałów oraz ładowanie widoku willi bez brakujących i zewnętrznych zasobów.

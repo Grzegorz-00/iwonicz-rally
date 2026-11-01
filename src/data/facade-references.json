@@ -1,0 +1,34 @@
+{
+  "347636108": {
+    "address": "Zdrojowa 14",
+    "reference": "1265305397614531",
+    "match": "Street-side footprint immediately east of the computed camera position; identification from geometry and south-facing view, not a legible number plate.",
+    "wallColor": "#a4a59e", "eaves": 6.0, "floors": 2, "roof": "hipped", "roofHeight": 1.2, "roofMaterial": "metal", "roofColor": "#68716c",
+    "frontBays": 4, "windowHeight": 1.65, "windowWidth": 1.1, "transom": true, "front": "road", "hedge": true
+  },
+  "347636206": {
+    "address": "Zdrojowa 6",
+    "reference": "1265305397614531",
+    "match": "Blue-grey timber frontage south of the grey house, matched to the adjacent street-side footprint. Hidden sides remain inferred.",
+    "wallColor": "#6f858b", "eaves": 5.5, "floors": 2, "roof": "gabled", "roofHeight": 3.1, "roofMaterial": "metal", "roofColor": "#969f9c", "ridge": "short",
+    "frontBays": 3, "windowHeight": 1.65, "windowWidth": 0.95, "transom": true, "siding": true, "balcony": true, "front": "road"
+  },
+  "347636255": {
+    "address": "Zdrojowa 2", "reference": "1265305397614531",
+    "match": "Approximate association of the southern pale gabled group; window layout and the division between numbers 2 and 4 are uncertain.",
+    "wallColor": "#d2cec0", "eaves": 5.6, "floors": 2, "roof": "gabled", "roofHeight": 3.8, "roofMaterial": "metal", "roofColor": "#929b97",
+    "frontBays": 4, "windowHeight": 1.6, "windowWidth": 1.05, "transom": true, "dormer": true, "front": "road"
+  },
+  "402687290": {
+    "address": "Zdrojowa 4", "reference": "1265305397614531",
+    "match": "Approximate association of the southern pale gabled group; façades are not fully documented.",
+    "wallColor": "#c8c9c0", "eaves": 5.6, "floors": 2, "roof": "gabled", "roofHeight": 3.4, "roofMaterial": "metal", "roofColor": "#8b9690",
+    "frontBays": 3, "windowHeight": 1.6, "windowWidth": 1.05, "front": "road"
+  },
+  "347637101": {
+    "address": "Zdrojowa 87", "reference": "GUGiK HighResolution ortho + Mapillary neighbourhood views",
+    "match": "Silver north-south roof and footprint from ortho/OSM; the street photos do not expose the full façade.",
+    "wallColor": "#ded9ca", "eaves": 5.8, "floors": 2, "roof": "gabled", "roofHeight": 2.7, "roofMaterial": "metal", "roofColor": "#aab6b2",
+    "frontBays": 3, "windowHeight": 1.4, "windowWidth": 1.2, "front": "road"
+  }
+}
