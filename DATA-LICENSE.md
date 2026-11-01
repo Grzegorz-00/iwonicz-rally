@@ -26,3 +26,9 @@ The JSON includes source metadata and OSM way IDs. The import and projection are
 - Kloofendal 48d Partly Cloudy (Pure Sky) — Greg Zaal.
 
 Complete source URLs, authors, physical dimensions, provider MD5 and downloaded SHA256 checksums are recorded in `public/materials/sources.json`. They are material references and generic sky lighting, not scans or photographs of Zdrojowa. The source files are shipped without image modifications; material tint and normal strength are adjusted at runtime. No Mapillary photograph is included in game textures. Leaf silhouettes, siding and metal seam patterns are original procedural assets.
+
+## Scanned vegetation
+
+`public/vegetation/tree.glb` and `tree-atlas.png` derive from **Tree Small 02**, by **Rico Cilliers**, Poly Haven, **CC0 1.0**: https://polyhaven.com/a/tree_small_02.
+
+The original source files were downloaded with provider MD5 verification. Source URLs, original hashes, reduction settings and derived SHA256 hashes are retained in `public/vegetation/sources.json`. The model was simplified with glTF Transform 4.5.1 and textures resized to 512 px; the four-view atlas was rendered from that reduced model using the game's lighting. This is a generic scanned tree, not a scan of a particular tree on Zdrojowa. The approximately 101 MB originals are not shipped with the game.

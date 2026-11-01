@@ -7,17 +7,17 @@ import data from './data/zdrojowa.json';
 import { insidePolygon, nearestOnLine, pointAt } from './geography.js';
 export { data };
 
-export function createWorld(scene, { mat, M, box, cylinder, label,materials }) {
+export function createWorld(scene, { mat, M, box, cylinder, label,materials,treeAsset }) {
   let seed = 126;
   const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
   const sill=materials.plaster.clone();sill.color.set(0x9da39e);const fence=mat(0x626552);
-  const vegetation=vegetationFactory();
+  const vegetation=vegetationFactory(treeAsset);
   const architecture=architectureKit({scene,mat,M,box,cylinder,materials,route:data.route,vegetation});
   const water = mat(0x668d86, {roughness:.3});
   const pathMat = mat(0xb1a68f), meadow = mat(0xa5b18a), forest = mat(0x8b9b77);
   const rails = mat(0x9d9d80);
   const features = [], drivable = [];
-  const terrainMesh=new THREE.Mesh(groundGeometry(grid,data.route),M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
+  const terrainMesh=new THREE.Mesh(groundGeometry(grid,data.route),M.grass);terrainMesh.userData.conformTerrain=true;terrainMesh.castShadow=true;terrainMesh.receiveShadow=true;scene.add(terrainMesh);
   function strip(points,width,material,y=.025,offset=0){if(points.length<2)return;const mesh=new THREE.Mesh(ribbonGeometry(points,width,y,offset,[M.road,M.walk,M.curb,pathMat].includes(material)?.5:0),material);mesh.userData.conformTerrain=true;mesh.receiveShadow=true;scene.add(mesh);}
   // OSM centre lines and tagged bridges, in their real positions.
   for(const f of data.waterways)strip(f.points,f.tags.name==='Iwoniczanka'?3.2:1.2,water,-.02);
@@ -72,7 +72,7 @@ export function createWorld(scene, { mat, M, box, cylinder, label,materials }) {
       for(let k=-.8;k<1;k+=.32){const picket=box(.025,.78,.025,fence,x+Math.sin(p.heading)*k,.65,z+Math.cos(p.heading)*k);}
     }
   }
-  function tree(x,z,size=1,pine=false){cylinder(.08*size,.18*size,4.5*size,M.trunk,x,2.25*size,z);vegetation.add(x,z,size,pine?'pine':'broadleaf');}
+  function tree(x,z,size=1,pine=false){if(pine)cylinder(.08*size,.18*size,4.5*size,M.trunk,x,2.25*size,z);vegetation.add(x,z,size,pine?'pine':'broadleaf');}
   // Vegetation distribution follows mapped woodland; individual trees are illustrative.
   let treeCount=0;
   for(const f of data.landcover.filter(f=>f.tags.landuse==='forest'||f.tags.natural==='wood')) {
@@ -106,6 +106,8 @@ export function createWorld(scene, { mat, M, box, cylinder, label,materials }) {
     onRoad:(x,z)=>drivable.some(r=>nearestOnLine(r.points,x,z).distance<r.width/2),
     collides:(x,z)=>features.some(b=>x>=b.minX-1&&x<=b.maxX+1&&z>=b.minZ-1&&z<=b.maxZ+1&&(insidePolygon(b.points,x,z)||nearestOnLine(b.points,x,z).distance<1)),
     installVegetation:options=>vegetation.install(scene,options),
+    updateVegetation:(camera,player)=>vegetation.update(camera,player),
+    get detailedTrees(){return vegetation.detailCount;},get scannedTrees(){return vegetation.count;},
     buildings:features,referenceBuildings:features.filter(f=>f.reference).map(f=>f.id),
   };
 }

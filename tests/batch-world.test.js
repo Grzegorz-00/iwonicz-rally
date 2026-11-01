@@ -8,3 +8,8 @@ test('world-encoded buildings with the same origin are split into independently 
  const centres=meshes.map(m=>m.geometry.boundingSphere.center.z).sort((a,b)=>a-b);assert.equal(centres[0],32);assert.equal(centres[1],352);
  assert.ok(meshes.every(m=>m.geometry.boundingSphere.radius<3));
 });
+
+test('contact shading remains non-shadow-casting after batching',()=>{
+ const scene=new THREE.Scene(),material=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}),mesh=new THREE.Mesh(new THREE.PlaneGeometry(2,2),material);mesh.castShadow=false;mesh.receiveShadow=false;scene.add(mesh);batchWorld(scene);
+ assert.ok(scene.children.filter(o=>o.isMesh).every(o=>!o.castShadow&&!o.receiveShadow));
+});

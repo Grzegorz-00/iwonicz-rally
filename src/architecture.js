@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import refs from './data/facade-references.json';
+import {foundationDepth,footingMaterial,footingShade} from './contact-details.js';
+import {heightAt} from './terrain.js';
 import {nearestOnLine} from './geography.js';
 export {refs};
 
 export function architectureKit({scene,mat,M,box,cylinder,materials,route,vegetation}){
- const plasterCache=new Map(),roofCache=new Map();
+ const plasterCache=new Map(),roofCache=new Map(),shade=footingMaterial();
  const trim=mat(0xe2e1d8,{roughness:.7}),plinth=materials.plaster.clone();plinth.color.set(0x747977);plinth.userData.tile=1.5;
  const drain=mat(0x697574,{metalness:.55,roughness:.48}),black=mat(0x222a2b),glassCache=[];
  const metalMap=metalTexture(),woodMap=sidingTexture();
@@ -45,14 +47,16 @@ export function architectureKit({scene,mat,M,box,cylinder,materials,route,vegeta
   const near=nearestOnLine(route,cx,cz),small=['garage','garages','shed','outbuilding','roof'].includes(f.tags.building);
   const levels=ref?.floors||Number.parseFloat(f.tags['building:levels'])||(small?1:2),h=ref?.eaves||Number.parseFloat(f.tags.height)||(levels*2.75+.2);
   const palette=['#d0cfbf','#c9cbc5','#d9d2b8','#c9d0ce','#c6bba6'];const wall=material(ref?.wallColor||palette[Number(f.id)%palette.length],ref?.siding);
-  const shape=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));const g=new THREE.ExtrudeGeometry(shape,{depth:h+2,bevelEnabled:false});g.rotateX(-Math.PI/2);g.translate(0,-2,0);const body=new THREE.Mesh(g,wall);body.castShadow=true;body.receiveShadow=true;scene.add(body);
+  const depth=foundationDepth(pts,heightAt(cx,cz),heightAt);
+  const shape=new THREE.Shape(pts.map(([x,z])=>new THREE.Vector2(x,-z)));const g=new THREE.ExtrudeGeometry(shape,{depth:h+depth,bevelEnabled:false});g.rotateX(-Math.PI/2);g.translate(0,-depth,0);const body=new THREE.Mesh(g,wall);body.castShadow=true;body.receiveShadow=true;scene.add(body);
+  if(near.distance<100)footingShade(pts,scene,shade);
   const roofStyle=ref?.roof||f.tags['roof:shape']||(small?'flat':'gabled'),rise=ref?.roofHeight||Number.parseFloat(f.tags['roof:height'])||Math.min(3.1,Math.min(maxX-minX,maxZ-minZ)*.36);
   const roofColors=['#8d9693','#867b6b','#a5aba7','#74594a'];makeRoof(pts,h,rise,roofStyle,ref?.roofColor||roofColors[Number(f.id)%roofColors.length],ref?.roofMaterial==='metal',ref?.ridge==='short',wall);
   const area=pts.reduce((sum,a,i)=>{const b=pts[(i+1)%pts.length];return sum+a[0]*b[1]-b[0]*a[1];},0);
   const edges=pts.map((a,i)=>{const b=pts[(i+1)%pts.length],len=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=(b[0]-a[0])/len,dz=(b[1]-a[1])/len,sign=area>0?1:-1;return {a,b,len,dx,dz,nx:dz*sign,nz:-dx*sign,near:nearestOnLine(route,(a[0]+b[0])/2,(a[1]+b[1])/2).distance};});
   const front=edges.filter(e=>e.len>4).sort((a,b)=>a.near-b.near)[0];
   for(const e of edges){const {a,b,len,dx,dz,nx,nz}=e;if(len<1)continue;
-   const angle=Math.atan2(-dz,dx),base=box(len,.55,.06,plinth,(a[0]+b[0])/2,.275,(a[1]+b[1])/2);base.rotation.y=angle;
+   const drop=Math.max(.1,heightAt(cx,cz)-Math.min(heightAt(...a),heightAt(...b))+.2),angle=Math.atan2(-dz,dx),base=box(len,.55+drop,.065,plinth,(a[0]+b[0])/2,(.55-drop)/2,(a[1]+b[1])/2);base.rotation.y=angle;
    if(near.distance>95||small||len<3)continue;
    const n=e===front&&ref?.frontBays?ref.frontBays:Math.max(1,Math.floor((len-1.6)/3.2));
    for(let floor=0;floor<Math.min(levels,5);floor++)for(let i=0;i<n;i++){

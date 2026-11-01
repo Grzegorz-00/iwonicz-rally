@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "playwright test",
-    "test:geo": "node --test tests/geography.test.js tests/terrain.test.js tests/handling.test.js tests/road-geometry.test.js tests/visual-assets.test.js tests/batch-world.test.js"
+    "test:geo": "node --test tests/geography.test.js tests/terrain.test.js tests/handling.test.js tests/road-geometry.test.js tests/visual-assets.test.js tests/batch-world.test.js tests/contact-details.test.js tests/vegetation-assets.test.js"
   },
   "dependencies": {
     "three": "0.187.0"

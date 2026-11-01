@@ -77,3 +77,11 @@ Link **Zobacz wille ze zdjęć** (lub `?start=villas`) pokazuje odcinek z osobny
 Asfalt, kostka, grunt i pokrycia dachów korzystają z lokalnych fotograficznych map PBR 1K; tynki z fotograficznych normalnych i szorstkości, z barwą farby dobraną w modelu. HDRI daje niebo i odbicia. Zasoby Poly Haven są na CC0; autorzy, adresy i zweryfikowane sumy kontrolne: `public/materials/sources.json`. Łącznie około 11,4 MB, bez zapytań do dostawcy przy uruchamianiu gry. Zdjęcia Mapillary służą wyłącznie jako odniesienie; nie skopiowano ich na elewacje.
 
 Odtworzenie pobrania: `python3 scripts/fetch-materials.py`. Nie jest potrzebne do zwykłego `npm ci` / `npm run build` — zasoby są częścią repozytorium. Testy sprawdzają też kompletność i sumy kontrolne materiałów oraz ładowanie widoku willi bez brakujących i zewnętrznych zasobów.
+
+## Skanowane drzewa i kontakt z podłożem
+
+Drzewa liściaste korzystają teraz z modelu **Tree Small 02 (Rico Cilliers, Poly Haven, CC0)**. Na GPU dwa najbliższe drzewa do 24 m mogą mieć szczegółową geometrię; pozostałe wykorzystują czterokierunkowy atlas wyrenderowany z tego samego modelu. W trybie programowym GLB nie jest pobierany. Rozmieszczenie i gatunki pozostają orientacyjne, a iglaki i żywopłoty nadal są uproszczone.
+
+Zoptymalizowany GLB ma około 10,3 MB i 164 792 trójkąty; atlas jest znacznie lżejszy. Autorstwo, oryginalne i wynikowe sumy kontrolne: `public/vegetation/sources.json`. Duże oryginały są poza repozytorium. Opcjonalne odtworzenie: `python3 scripts/prepare-tree.py`, następnie `node scripts/bake-tree.mjs` (narzędzia i Chromium opisano w raporcie źródeł). Zwykły build korzysta z gotowych plików, bez ponownego pobierania.
+
+Fundamenty dopasowują głębokość do nachylenia NMT, a delikatne cienie kontaktowe pomagają osadzić domy i auto na podłożu. Światła stop reagują na hamowanie; kierownica obraca się wraz ze skrętem, a koła nie przechylają się razem z karoserią.

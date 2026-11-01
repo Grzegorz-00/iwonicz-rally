@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {carContactShadow} from './contact-details.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 // 1975-style 126p: measured proportions from The-Blueprints reference 1197.
 export function createFiat(scene){
@@ -58,12 +59,15 @@ export function createFiat(scene){
  line([[-.23,.90,.775],[.19,.91,.77]],black,.006);line([[.15,.90,.775],[.47,.93,.74]],black,.006);
  const wheels=[];
  for(const x of [-.60,.60])for(const z of [-.92,.92]){
-  const pivot=new THREE.Group(),tire=new THREE.Group(),hub=new THREE.Group();pivot.position.set(x,.245,z);pivot.add(tire,hub);chassis.add(pivot);
+  const pivot=new THREE.Group(),tire=new THREE.Group(),hub=new THREE.Group();pivot.position.set(x,.245,z);pivot.add(tire,hub);car.add(pivot);
   const t=mesh(new THREE.TorusGeometry(.184,.061,16,48),black,tire);t.rotation.y=Math.PI/2;t.scale.z=1.1;
   const rim=mesh(new THREE.CylinderGeometry(.139,.139,.12,40),chrome,hub);rim.rotation.z=Math.PI/2;
   const cap=mesh(new THREE.SphereGeometry(.102,24,16),chrome,hub);cap.scale.set(.2,1,1);cap.position.x=Math.sign(x)*.073;
   for(let i=0;i<12;i++){let a=i*Math.PI/6;const hole=mesh(new THREE.SphereGeometry(.012,8,8),black,hub);hole.scale.x=.25;hole.position.set(Math.sign(x)*.065,Math.sin(a)*.12,Math.cos(a)*.12);}
   wheels.push({pivot,tire,hub,front:z>0});
  }
- return {car,chassis,wheels};
+ carContactShadow(car);
+ let brakeLightsActive=false;
+ function updateVisuals({braking,steering:input}){brakeLightsActive=braking;red.emissive.set(braking?0xff1b04:0x000000);red.emissiveIntensity=braking?1.5:0;steering.rotation.z=-input*.9;}
+ return {car,chassis,wheels,updateVisuals,get brakeLightsActive(){return brakeLightsActive;}};
 }
